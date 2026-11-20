@@ -1,4 +1,5 @@
 import '../models/estudiante.dart';
+import '../models/docente.dart';
 
 class AsistenciaService {
   List<Estudiante> _estudiantes = [];
@@ -58,11 +59,15 @@ class AsistenciaService {
       }
 
       final index = _estudiantes.indexWhere(
-        (e) => e.codigo == codigo && (aulaCodigo == null || e.aulaCodigo == aulaCodigo),
+        (e) =>
+            e.codigo == codigo &&
+            (aulaCodigo == null || e.aulaCodigo == aulaCodigo),
       );
 
       if (index == -1) {
-        throw StateError('Estudiante $codigo no encontrado${aulaCodigo != null ? " en $aulaCodigo" : ""}.');
+        throw StateError(
+          'Estudiante $codigo no encontrado${aulaCodigo != null ? " en $aulaCodigo" : ""}.',
+        );
       }
 
       _estudiantes[index].estado = nuevoEstado;
@@ -75,7 +80,9 @@ class AsistenciaService {
 
   // Contar por estado (en toda la lista cargada o en un aula específica)
   int contarPorEstado(EstadoAsistencia estado, {String? aulaCodigo}) {
-    return obtenerTodos(aulaCodigo: aulaCodigo).where((e) => e.estado == estado).length;
+    return obtenerTodos(aulaCodigo: aulaCodigo)
+        .where((e) => e.estado == estado)
+        .length;
   }
 
   int totalPresentes({String? aulaCodigo}) =>
@@ -93,7 +100,8 @@ class AsistenciaService {
       final lista = obtenerTodos(aulaCodigo: aulaCodigo);
       if (lista.isEmpty) return 0.0;
 
-      final asistieron = totalPresentes(aulaCodigo: aulaCodigo) +
+      final asistieron =
+          totalPresentes(aulaCodigo: aulaCodigo) +
           totalTardanzas(aulaCodigo: aulaCodigo);
       final porcentaje = (asistieron / lista.length) * 100;
       return double.parse(porcentaje.toStringAsFixed(2));
@@ -104,7 +112,10 @@ class AsistenciaService {
   }
 
   // Filtrar por estado (y opcionalmente por aula)
-  List<Estudiante> filtrarPorEstado(EstadoAsistencia estado, {String? aulaCodigo}) {
+  List<Estudiante> filtrarPorEstado(
+    EstadoAsistencia estado, {
+    String? aulaCodigo,
+  }) {
     return obtenerTodos(aulaCodigo: aulaCodigo)
         .where((e) => e.estado == estado)
         .toList();
@@ -119,10 +130,15 @@ class AsistenciaService {
       'presentes': totalPresentes(aulaCodigo: aulaCodigo),
       'tardanzas': totalTardanzas(aulaCodigo: aulaCodigo),
       'faltas': totalFaltas(aulaCodigo: aulaCodigo),
-      'sinRegistrar': contarPorEstado(EstadoAsistencia.sinRegistrar, aulaCodigo: aulaCodigo),
-      'porcentajeAsistencia': '${calcularPorcentajeAsistencia(aulaCodigo: aulaCodigo)}%',
+      'sinRegistrar': contarPorEstado(
+        EstadoAsistencia.sinRegistrar,
+        aulaCodigo: aulaCodigo,
+      ),
+      'porcentajeAsistencia':
+          '${calcularPorcentajeAsistencia(aulaCodigo: aulaCodigo)}%',
     };
   }
+
   // Obtener la lista estática de profesores
   List<Profesor> obtenerProfesores() => Profesor.profesoresEstaticos;
 
