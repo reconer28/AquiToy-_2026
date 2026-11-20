@@ -1,6 +1,5 @@
 import '../models/docente.dart';
 import '../models/estudiante.dart';
-import '../models/docente.dart';
 
 class AsistenciaService {
   List<Estudiante> _estudiantes = [];

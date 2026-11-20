@@ -13,11 +13,7 @@ class Docente {
     required this.aulaCodigo,
   });
 
-<<<<<<< HEAD
-  // Lista estática de 3 docentes en su propio archivo
-=======
   // Lista estática de 3 docentes
->>>>>>> c811cc4d39cdb732c2b5494522b8c19d5979cca5
   static const List<Docente> listaEstatica = [
     Docente(
       codigo: 'DOC001',
@@ -46,8 +42,4 @@ class Docente {
   String toString() {
     return '[$codigo] $nombre $apellido ($correo) - Aula: $aulaCodigo';
   }
-<<<<<<< HEAD
 }
-=======
-}
->>>>>>> c811cc4d39cdb732c2b5494522b8c19d5979cca5

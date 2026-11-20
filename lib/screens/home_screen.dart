@@ -1,204 +1,132 @@
 import 'package:flutter/material.dart';
 
-import '../theme/app_tema.dart';
+import '../models/docente.dart';
+import '../services/asistencia_service.dart';
+
+import 'login_screen.dart';
 import 'asistencia_screen.dart';
 import 'reporte_screen.dart';
 import 'micuenta_screen.dart';
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
+  final AsistenciaService servicio;
+  final Docente docente;
+
+  const HomeScreen({super.key, required this.servicio, required this.docente});
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  static const morado = Color(0xFF60358C);
+  static const dorado = Color(0xFFF5BC51);
+
   int _pagina = 0;
-  String _aulaActual = '1.º A';
-  String _nombreDocente = 'Docente AquiToy';
 
-  // Datos de ejemplo para el frontend.
-  final List<Map<String, String>> _estudiantes = [
-    {
-      'codigo': 'A001',
-      'nombre': 'Ana Torres Pérez',
-      'aula': '1.º A',
-      'estado': 'Presente',
-    },
-    {
-      'codigo': 'A002',
-      'nombre': 'Luis Pérez Díaz',
-      'aula': '1.º A',
-      'estado': 'Tardanza',
-    },
-    {
-      'codigo': 'A003',
-      'nombre': 'Rosa Díaz López',
-      'aula': '1.º A',
-      'estado': 'Falta',
-    },
-    {
-      'codigo': 'A004',
-      'nombre': 'José Flores Ruiz',
-      'aula': '1.º A',
-      'estado': 'Presente',
-    },
-    {
-      'codigo': 'A005',
-      'nombre': 'María García Soto',
-      'aula': '1.º A',
-      'estado': 'Presente',
-    },
-    {
-      'codigo': 'A006',
-      'nombre': 'Carlos Rojas Vega',
-      'aula': '1.º A',
-      'estado': 'Presente',
-    },
-    {
-      'codigo': 'A007',
-      'nombre': 'Lucía Ramos Castro',
-      'aula': '1.º A',
-      'estado': 'Tardanza',
-    },
-    {
-      'codigo': 'A008',
-      'nombre': 'Pedro Mendoza León',
-      'aula': '1.º A',
-      'estado': 'Presente',
-    },
-    {
-      'codigo': 'A009',
-      'nombre': 'Elena Vargas Silva',
-      'aula': '1.º A',
-      'estado': 'Falta',
-    },
-    {
-      'codigo': 'A010',
-      'nombre': 'Diego Chávez Ríos',
-      'aula': '1.º A',
-      'estado': 'Presente',
-    },
+  late String _aulaActual;
+  late String _nombreDocente;
 
-    {
-      'codigo': 'B001',
-      'nombre': 'Sofía Herrera Ruiz',
-      'aula': '1.º B',
-      'estado': 'Presente',
-    },
-    {
-      'codigo': 'B002',
-      'nombre': 'Miguel Salas Pérez',
-      'aula': '1.º B',
-      'estado': 'Presente',
-    },
-    {
-      'codigo': 'B003',
-      'nombre': 'Andrea Campos Díaz',
-      'aula': '1.º B',
-      'estado': 'Tardanza',
-    },
-    {
-      'codigo': 'B004',
-      'nombre': 'Jorge Medina Soto',
-      'aula': '1.º B',
-      'estado': 'Falta',
-    },
-    {
-      'codigo': 'B005',
-      'nombre': 'Paola Ríos Torres',
-      'aula': '1.º B',
-      'estado': 'Presente',
-    },
-    {
-      'codigo': 'B006',
-      'nombre': 'Mario López Vargas',
-      'aula': '1.º B',
-      'estado': 'Presente',
-    },
-    {
-      'codigo': 'B007',
-      'nombre': 'Karla Paredes León',
-      'aula': '1.º B',
-      'estado': 'Presente',
-    },
-    {
-      'codigo': 'B008',
-      'nombre': 'Raúl Castillo Flores',
-      'aula': '1.º B',
-      'estado': 'Falta',
-    },
-    {
-      'codigo': 'B009',
-      'nombre': 'Diana Molina Ramos',
-      'aula': '1.º B',
-      'estado': 'Presente',
-    },
-    {
-      'codigo': 'B010',
-      'nombre': 'Hugo Sánchez Castro',
-      'aula': '1.º B',
-      'estado': 'Tardanza',
-    },
-  ];
+  @override
+  void initState() {
+    super.initState();
 
-  void _cambiarEstado(String codigo, String estado) {
-    setState(() {
-      final estudiante = _estudiantes.firstWhere(
-        (item) => item['codigo'] == codigo,
-      );
-      estudiante['estado'] = estado;
-    });
+    // Aula asignada al docente.
+    _aulaActual = widget.docente.aulaCodigo;
+
+    _nombreDocente = '${widget.docente.nombre} ${widget.docente.apellido}';
+  }
+
+  // Actualizar interfaz después de guardar.
+  void _actualizarAsistencia() {
+    setState(() {});
+  }
+
+  // CERRAR SESIÓN
+  void _cerrarSesion() {
+    Navigator.pushAndRemoveUntil(
+      context,
+      MaterialPageRoute(builder: (_) => const LoginScreen()),
+      (route) => false,
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: AppTheme.secundario,
+        backgroundColor: morado,
         foregroundColor: Colors.white,
+
         title: const Row(
+          mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.school_rounded, color: AppTheme.acento, size: 25),
-            SizedBox(width: 10),
+            Icon(Icons.school, color: dorado, size: 23),
+            SizedBox(width: 8),
             Text(
               'AquiToy!',
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
           ],
         ),
+
+        // BOTÓN PEQUEÑO CERRAR SESIÓN
+        actions: [
+          TextButton.icon(
+            onPressed: _cerrarSesion,
+            icon: const Icon(Icons.logout, size: 16),
+            label: const Text('Cerrar sesión', style: TextStyle(fontSize: 11)),
+            style: TextButton.styleFrom(
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(horizontal: 8),
+            ),
+          ),
+          const SizedBox(width: 4),
+        ],
       ),
 
+      // NAVEGACIÓN ENTRE PANTALLAS
       body: IndexedStack(
         index: _pagina,
         children: [
           AsistenciaScreen(
-            estudiantes: _estudiantes,
+            servicio: widget.servicio,
             aulaActual: _aulaActual,
-            onCambiarAula: (aula) {
-              setState(() => _aulaActual = aula);
+            onCambiarAula: (codigo) {
+              setState(() {
+                _aulaActual = codigo;
+              });
             },
-            onCambiarEstado: _cambiarEstado,
+            onActualizado: _actualizarAsistencia,
           ),
-          ReporteScreen(estudiantes: _estudiantes, aulaActual: _aulaActual),
+
+          ReporteScreen(servicio: widget.servicio, aulaCodigo: _aulaActual),
+
           MiCuentaScreen(
             nombreDocente: _nombreDocente,
             onCambiarNombre: (nombre) {
-              setState(() => _nombreDocente = nombre);
+              setState(() {
+                _nombreDocente = nombre;
+              });
             },
           ),
         ],
       ),
 
+      // MENÚ INFERIOR
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _pagina,
-        selectedItemColor: AppTheme.secundario,
-        unselectedItemColor: Colors.grey,
-        backgroundColor: Colors.white,
         type: BottomNavigationBarType.fixed,
+        backgroundColor: Colors.white,
+        selectedItemColor: morado,
+        unselectedItemColor: Colors.grey,
+
         onTap: (indice) {
-          setState(() => _pagina = indice);
+          setState(() {
+            _pagina = indice;
+          });
         },
+
         items: const [
           BottomNavigationBarItem(
             icon: Icon(Icons.fact_check_outlined),

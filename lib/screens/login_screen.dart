@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../theme/app_tema.dart';
+import '../services/asistencia_service.dart';
 import 'home_screen.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -11,260 +11,222 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  final _formKey = GlobalKey<FormState>();
-  bool _mostrarContrasena = false;
+  static const morado = Color(0xFF60358C);
+  static const dorado = Color(0xFFF5BC51);
+  static const texto = Color(0xFF352447);
 
-  void _ingresar() {
-    if (_formKey.currentState!.validate()) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const HomeScreen()),
-      );
-    }
+  final _formKey = GlobalKey<FormState>();
+  final _correo = TextEditingController();
+  final _contrasena = TextEditingController();
+
+  bool _mostrarContrasena = false;
+  bool _cargando = false;
+
+  @override
+  void dispose() {
+    _correo.dispose();
+    _contrasena.dispose();
+    super.dispose();
   }
 
-  InputDecoration _decoracion(String texto, IconData icono, {Widget? sufijo}) {
-    return InputDecoration(
-      hintText: texto,
-      prefixIcon: Icon(icono, color: AppTheme.secundario),
-      suffixIcon: sufijo,
-      filled: true,
-      fillColor: const Color(0xFFFAF8FC),
-      contentPadding: const EdgeInsets.all(16),
-      border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
-      enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(14),
-        borderSide: const BorderSide(color: Color(0xFFD9CBE8)),
-      ),
-      focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(14),
-        borderSide: const BorderSide(color: AppTheme.secundario, width: 2),
-      ),
-    );
+  Future<void> _ingresar() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    final servicio = AsistenciaService();
+
+    // Buscar docente en el backend.
+    final docente = servicio.buscarDocentePorCorreo(_correo.text.trim());
+
+    if (docente == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Correo de docente no registrado.')),
+      );
+      return;
+    }
+
+    setState(() => _cargando = true);
+
+    try {
+      // Cargar los 20 estudiantes del backend.
+      await servicio.cargarEstudiantes();
+
+      if (!mounted) return;
+
+      // Enviar el mismo servicio a HomeScreen.
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (_) => HomeScreen(servicio: servicio, docente: docente),
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Error al cargar los datos: $e')));
+    } finally {
+      if (mounted) {
+        setState(() => _cargando = false);
+      }
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color(0xFFF3EDFA),
       body: SafeArea(
-        child: SingleChildScrollView(
-          child: Center(
+        child: Center(
+          child: SingleChildScrollView(
             child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 480),
+              constraints: const BoxConstraints(maxWidth: 450),
               child: Column(
                 children: [
-                  // ENCABEZADO INSTITUCIONAL
                   Container(
                     width: double.infinity,
-                    padding: const EdgeInsets.fromLTRB(24, 40, 24, 65),
+                    padding: const EdgeInsets.all(35),
                     decoration: const BoxDecoration(
-                      color: AppTheme.secundario,
+                      color: morado,
                       borderRadius: BorderRadius.only(
-                        bottomLeft: Radius.circular(32),
-                        bottomRight: Radius.circular(32),
+                        bottomLeft: Radius.circular(30),
+                        bottomRight: Radius.circular(30),
                       ),
                     ),
                     child: Column(
                       children: [
-                        Container(
-                          width: 72,
-                          height: 72,
-                          decoration: const BoxDecoration(
-                            color: AppTheme.acento,
-                            shape: BoxShape.circle,
-                          ),
-                          child: const Icon(
-                            Icons.school_rounded,
-                            size: 42,
-                            color: AppTheme.texto,
-                          ),
+                        const CircleAvatar(
+                          radius: 35,
+                          backgroundColor: dorado,
+                          child: Icon(Icons.school, size: 40, color: texto),
                         ),
-                        const SizedBox(height: 16),
+                        const SizedBox(height: 15),
                         const Text(
                           'AquiToy!',
                           style: TextStyle(
-                            fontSize: 32,
-                            fontWeight: FontWeight.bold,
                             color: Colors.white,
+                            fontSize: 30,
+                            fontWeight: FontWeight.bold,
                           ),
                         ),
                         const SizedBox(height: 8),
                         const Text(
-                          'Tu aula, organizada en un solo lugar',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(fontSize: 15, color: Colors.white),
+                          'Control de asistencia estudiantil',
+                          style: TextStyle(color: Colors.white),
                         ),
                       ],
                     ),
                   ),
 
-                  // FORMULARIO DE INICIO DE SESIÓN
-                  Transform.translate(
-                    offset: const Offset(0, -30),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 20),
-                      child: Card(
-                        color: Colors.white,
-                        elevation: 5,
-                        shadowColor: AppTheme.secundario,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(24),
-                        ),
-                        child: Padding(
-                          padding: const EdgeInsets.all(24),
-                          child: Form(
-                            key: _formKey,
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.stretch,
-                              children: [
-                                const Text(
-                                  '¡Bienvenido, docente!',
-                                  style: TextStyle(
-                                    fontSize: 22,
-                                    fontWeight: FontWeight.bold,
-                                    color: AppTheme.texto,
-                                  ),
+                  Padding(
+                    padding: const EdgeInsets.all(20),
+                    child: Card(
+                      color: Colors.white,
+                      child: Padding(
+                        padding: const EdgeInsets.all(24),
+                        child: Form(
+                          key: _formKey,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              const Text(
+                                '¡Bienvenido, docente!',
+                                style: TextStyle(
+                                  fontSize: 21,
+                                  fontWeight: FontWeight.bold,
+                                  color: texto,
                                 ),
-                                const SizedBox(height: 8),
-                                const Text(
-                                  'Ingresa tus datos para gestionar '
-                                  'la asistencia de tus estudiantes.',
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    color: Colors.black54,
-                                  ),
-                                ),
-                                const SizedBox(height: 28),
+                              ),
+                              const SizedBox(height: 20),
 
-                                // CORREO ELECTRÓNICO
-                                const Text(
-                                  'Correo electrónico',
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.w600,
-                                    color: AppTheme.texto,
-                                  ),
+                              TextFormField(
+                                controller: _correo,
+                                keyboardType: TextInputType.emailAddress,
+                                decoration: const InputDecoration(
+                                  labelText: 'Correo institucional',
+                                  prefixIcon: Icon(Icons.email_outlined),
+                                  border: OutlineInputBorder(),
                                 ),
-                                const SizedBox(height: 8),
-                                TextFormField(
-                                  keyboardType: TextInputType.emailAddress,
-                                  textInputAction: TextInputAction.next,
-                                  decoration: _decoracion(
-                                    'docente@institucion.edu.pe',
-                                    Icons.email_outlined,
-                                  ),
-                                  validator: (valor) {
-                                    if (valor == null || valor.trim().isEmpty) {
-                                      return 'Ingresa tu correo';
-                                    }
-                                    if (!RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$')
-                                        .hasMatch(valor.trim())) {
-                                      return 'Ingresa un correo válido';
-                                    }
-                                    return null;
-                                  },
-                                ),
-                                const SizedBox(height: 20),
+                                validator: (valor) {
+                                  if (valor == null || valor.trim().isEmpty) {
+                                    return 'Ingresa tu correo';
+                                  }
+                                  return null;
+                                },
+                              ),
 
-                                // CONTRASEÑA
-                                const Text(
-                                  'Contraseña',
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.w600,
-                                    color: AppTheme.texto,
+                              const SizedBox(height: 18),
+
+                              TextFormField(
+                                controller: _contrasena,
+                                obscureText: !_mostrarContrasena,
+                                decoration: InputDecoration(
+                                  labelText: 'Contraseña',
+                                  prefixIcon: const Icon(Icons.lock_outline),
+                                  border: const OutlineInputBorder(),
+                                  suffixIcon: IconButton(
+                                    icon: Icon(
+                                      _mostrarContrasena
+                                          ? Icons.visibility_off
+                                          : Icons.visibility,
+                                    ),
+                                    onPressed: () {
+                                      setState(() {
+                                        _mostrarContrasena =
+                                            !_mostrarContrasena;
+                                      });
+                                    },
                                   ),
                                 ),
-                                const SizedBox(height: 8),
-                                TextFormField(
-                                  obscureText: !_mostrarContrasena,
-                                  textInputAction: TextInputAction.done,
-                                  onFieldSubmitted: (_) => _ingresar(),
-                                  decoration: _decoracion(
-                                    'Ingresa tu contraseña',
-                                    Icons.lock_outline,
-                                    sufijo: IconButton(
-                                      tooltip: _mostrarContrasena
-                                          ? 'Ocultar contraseña'
-                                          : 'Mostrar contraseña',
-                                      icon: Icon(
-                                        _mostrarContrasena
-                                            ? Icons.visibility_off
-                                            : Icons.visibility,
+                                validator: (valor) {
+                                  if (valor == null || valor.isEmpty) {
+                                    return 'Ingresa una contraseña';
+                                  }
+                                  return null;
+                                },
+                              ),
+
+                              const SizedBox(height: 25),
+
+                              ElevatedButton(
+                                onPressed: _cargando ? null : _ingresar,
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: dorado,
+                                  foregroundColor: texto,
+                                  minimumSize: const Size.fromHeight(52),
+                                ),
+                                child: _cargando
+                                    ? const SizedBox(
+                                        height: 22,
+                                        width: 22,
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 2,
+                                        ),
+                                      )
+                                    : const Text(
+                                        'Ingresar',
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                        ),
                                       ),
-                                      onPressed: () {
-                                        setState(() {
-                                          _mostrarContrasena =
-                                              !_mostrarContrasena;
-                                        });
-                                      },
-                                    ),
-                                  ),
-                                  validator: (valor) {
-                                    if (valor == null || valor.isEmpty) {
-                                      return 'Ingresa tu contraseña';
-                                    }
-                                    return null;
-                                  },
-                                ),
-                                const SizedBox(height: 28),
+                              ),
 
-                                // BOTÓN DE INGRESO
-                                ElevatedButton(
-                                  onPressed: _ingresar,
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: AppTheme.acento,
-                                    foregroundColor: AppTheme.texto,
-                                    minimumSize: const Size.fromHeight(54),
-                                    elevation: 0,
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(14),
-                                    ),
-                                  ),
-                                  child: const Text(
-                                    'Ingresar',
-                                    style: TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
+                              const SizedBox(height: 15),
+
+                              const Text(
+                                'Acceso de demostración: '
+                                'se comprueba el correo del docente, '
+                                'pero no su contraseña.',
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.black54,
                                 ),
-                                const SizedBox(height: 20),
-                                const Text(
-                                  '¿Problemas para ingresar?\n'
-                                  'Contacta a administración.',
-                                  textAlign: TextAlign.center,
-                                  style: TextStyle(
-                                    fontSize: 13,
-                                    color: Colors.black54,
-                                  ),
-                                ),
-                              ],
-                            ),
+                              ),
+                            ],
                           ),
                         ),
                       ),
-                    ),
-                  ),
-
-                  // PIE DE PANTALLA
-                  const Padding(
-                    padding: EdgeInsets.only(bottom: 25),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.verified_user_outlined,
-                          size: 18,
-                          color: AppTheme.secundario,
-                        ),
-                        SizedBox(width: 8),
-                        Text(
-                          'Acceso exclusivo para docentes',
-                          style: TextStyle(
-                            color: AppTheme.secundario,
-                            fontSize: 13,
-                          ),
-                        ),
-                      ],
                     ),
                   ),
                 ],
