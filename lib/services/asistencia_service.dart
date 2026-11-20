@@ -1,3 +1,4 @@
+import '../models/docente.dart';
 import '../models/estudiante.dart';
 import '../models/docente.dart';
 
@@ -6,7 +7,19 @@ class AsistenciaService {
 
   List<Aula> obtenerAulas() => Aula.aulasEstaticas;
 
-  // Carga asíncrona desde la lista estática (opcionalmente filtrada por aulaCodigo)
+  List<Docente> obtenerDocentes() => Docente.listaEstatica;
+
+  Docente? buscarDocentePorCorreo(String correo) {
+    try {
+      return Docente.listaEstatica.firstWhere(
+        (d) => d.correo.toLowerCase() == correo.trim().toLowerCase(),
+      );
+    } catch (_) {
+      return null;
+    }
+  }
+
+  // Carga asíncrona desde la lista estática con try-catch
   Future<List<Estudiante>> cargarEstudiantes({
     String? aulaCodigo,
     bool simularError = false,
@@ -41,13 +54,12 @@ class AsistenciaService {
     }
   }
 
-  // Lista completa o filtrada por aula
   List<Estudiante> obtenerTodos({String? aulaCodigo}) {
     if (aulaCodigo == null) return _estudiantes;
     return _estudiantes.where((e) => e.aulaCodigo == aulaCodigo).toList();
   }
 
-  // Registrar o modificar asistencia (se puede restringir a un aulaCodigo si se indica)
+  // Registrar o modificar estado de asistencia con try-catch
   bool registrarOModificarAsistencia(
     String codigo,
     EstadoAsistencia nuevoEstado, {
@@ -78,7 +90,6 @@ class AsistenciaService {
     }
   }
 
-  // Contar por estado (en toda la lista cargada o en un aula específica)
   int contarPorEstado(EstadoAsistencia estado, {String? aulaCodigo}) {
     return obtenerTodos(aulaCodigo: aulaCodigo)
         .where((e) => e.estado == estado)
@@ -94,7 +105,6 @@ class AsistenciaService {
   int totalFaltas({String? aulaCodigo}) =>
       contarPorEstado(EstadoAsistencia.falta, aulaCodigo: aulaCodigo);
 
-  // Calcular porcentaje de asistencia (por aula si se pasa aulaCodigo)
   double calcularPorcentajeAsistencia({String? aulaCodigo}) {
     try {
       final lista = obtenerTodos(aulaCodigo: aulaCodigo);
@@ -111,7 +121,6 @@ class AsistenciaService {
     }
   }
 
-  // Filtrar por estado (y opcionalmente por aula)
   List<Estudiante> filtrarPorEstado(
     EstadoAsistencia estado, {
     String? aulaCodigo,
@@ -121,7 +130,6 @@ class AsistenciaService {
         .toList();
   }
 
-  // Resumen estadístico (por aula o general)
   Map<String, dynamic> obtenerResumenEstadistico({String? aulaCodigo}) {
     final lista = obtenerTodos(aulaCodigo: aulaCodigo);
     return {
@@ -137,19 +145,5 @@ class AsistenciaService {
       'porcentajeAsistencia':
           '${calcularPorcentajeAsistencia(aulaCodigo: aulaCodigo)}%',
     };
-  }
-
-  // Obtener la lista estática de profesores
-  List<Profesor> obtenerProfesores() => Profesor.profesoresEstaticos;
-
-  // Buscar un profesor por correo (útil para simular inicio de sesión por correo)
-  Profesor? buscarProfesorPorCorreo(String correo) {
-    try {
-      return Profesor.profesoresEstaticos.firstWhere(
-        (p) => p.correo.toLowerCase() == correo.trim().toLowerCase(),
-      );
-    } catch (_) {
-      return null;
-    }
   }
 }

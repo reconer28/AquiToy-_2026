@@ -27,8 +27,9 @@ class Estudiante {
     this.estado = EstadoAsistencia.sinRegistrar,
   });
 
+  // Lista estática: 10 estudiantes en AULA-1 y 10 estudiantes en AULA-2
   static List<Estudiante> listaEstatica = [
-    // --- AULA-1  ---
+    // --- AULA-1 (10 estudiantes) ---
     Estudiante(
       codigo: 'EST001',
       nombre: 'Ana',
@@ -90,7 +91,7 @@ class Estudiante {
       aulaCodigo: 'AULA-1',
     ),
 
-    // --- AULA-2  ---
+    // --- AULA-2 (10 estudiantes) ---
     Estudiante(
       codigo: 'EST011',
       nombre: 'Pedro',
