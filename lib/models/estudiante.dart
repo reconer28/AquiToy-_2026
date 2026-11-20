@@ -20,52 +20,6 @@ class Aula {
   ];
 }
 
-class Profesor {
-  final String codigo;
-  final String nombre;
-  final String apellido;
-  final String correo;
-  final String aulaCodigo;
-
-  const Profesor({
-    required this.codigo,
-    required this.nombre,
-    required this.apellido,
-    required this.correo,
-    required this.aulaCodigo,
-  });
-
-  // 3 profesores de prueba
-  static const List<Profesor> profesoresEstaticos = [
-    Profesor(
-      codigo: 'PROF01',
-      nombre: 'Ricardo',
-      apellido: 'Salazar',
-      correo: 'ricardo.salazar@instituto.edu.pe',
-      aulaCodigo: 'AULA-1',
-    ),
-    Profesor(
-      codigo: 'PROF02',
-      nombre: 'Patricia',
-      apellido: 'Mendoza',
-      correo: 'patricia.mendoza@instituto.edu.pe',
-      aulaCodigo: 'AULA-2',
-    ),
-    Profesor(
-      codigo: 'PROF03',
-      nombre: 'Fernando',
-      apellido: 'Chávez',
-      correo: 'fernando.chavez@instituto.edu.pe',
-      aulaCodigo: 'AULA-1',
-    ),
-  ];
-
-  @override
-  String toString() {
-    return '[$codigo] $nombre $apellido ($correo) - Asignado a: $aulaCodigo';
-  }
-}
-
 class Estudiante {
   final String codigo;
   final String nombre;
@@ -81,8 +35,9 @@ class Estudiante {
     this.estado = EstadoAsistencia.sinRegistrar,
   });
 
+  // Lista estática: 10 estudiantes en AULA-1 y 10 estudiantes en AULA-2
   static List<Estudiante> listaEstatica = [
-    // --- AULA-1  ---
+    // --- AULA-1 (10 estudiantes) ---
     Estudiante(codigo: 'EST001', nombre: 'Ana', apellido: 'Gómez', aulaCodigo: 'AULA-1'),
     Estudiante(codigo: 'EST002', nombre: 'Luis', apellido: 'Torres', aulaCodigo: 'AULA-1'),
     Estudiante(codigo: 'EST003', nombre: 'Carlos', apellido: 'Mendoza', aulaCodigo: 'AULA-1'),
@@ -94,7 +49,7 @@ class Estudiante {
     Estudiante(codigo: 'EST009', nombre: 'Jorge', apellido: 'Herrera', aulaCodigo: 'AULA-1'),
     Estudiante(codigo: 'EST010', nombre: 'Camila', apellido: 'Morales', aulaCodigo: 'AULA-1'),
 
-    // --- AULA-2  ---
+    // --- AULA-2 (10 estudiantes) ---
     Estudiante(codigo: 'EST011', nombre: 'Pedro', apellido: 'Castillo', aulaCodigo: 'AULA-2'),
     Estudiante(codigo: 'EST012', nombre: 'Sofía', apellido: 'Paredes', aulaCodigo: 'AULA-2'),
     Estudiante(codigo: 'EST013', nombre: 'Andrés', apellido: 'Quispe', aulaCodigo: 'AULA-2'),
